@@ -14,7 +14,7 @@ private:
 	size_t m_id = 0;
 	std::string m_tag = "default";
 
-	// 构造函数为私有，仅能通过友元来调用
+	// 绉佹湁鏋勯�犲嚱鏁帮紝浠呯敱鍙嬪厓 EntityManager 鍒涘缓
 	Entity(const size_t id, const std::string& tag);
 
 public:

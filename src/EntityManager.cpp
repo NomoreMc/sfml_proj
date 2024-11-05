@@ -1,38 +1,41 @@
 #include "EntityManager.h"
 #include <algorithm>
 
-/* ½«ĞÂÊµÌå¼ÓÈëµ½ÏÖÓĞ¶ÓÁĞÖĞ */
+/* å°† toAdd åˆ—è¡¨ä¸­çš„å®ä½“åŠ å…¥åˆ°ç°æœ‰åˆ—è¡¨ä¸­ */
 void EntityManager::update() {
-	// ½« toAdd ÁĞ±íÖĞĞÂÉú³ÉµÄ entity ¼ÓÈëµ½ entities ÒÔ¼° entityMap ÖĞ
+	// æ ¹æ® tag å°† toAdd åˆ—è¡¨ä¸­çš„å®ä½“åŠ å…¥åˆ° entityMap[tag]ã€entities åˆ—è¡¨ä¸­
 	for (auto e : m_toAdd) {
 		m_entities.push_back(e);
 		m_entityMap[e->tag()].push_back(e);
 	}
+	m_toAdd.clear();
 }
 
-/* ´Ó EntityVec ÒÔ¼° EntityMap ÖĞÒÆ³ı±» m_active = false µÄÊµÌå */
+/* ç§»é™¤ active ä¸º false çš„å®ä½“ */
 void EntityManager::removeDeadEntities(EntityVec& vec) {
-
-
+	// ç§»é™¤ active ä¸º false çš„å®ä½“
 	vec.erase(remove_if(vec.begin(), vec.end(), [](std::shared_ptr<Entity> e) {
 		return !e->isActive();
 	}), vec.end());
 }
 
-/* Ìí¼Ó±êÇ©Îª tag µÄÊµÌå */
+/* æ·»åŠ æ ‡ç­¾ä¸º tag çš„å®ä½“ */
 std::shared_ptr<Entity> EntityManager::addEntity(const std::string& tag) {
 	auto e = std::shared_ptr<Entity>(new Entity(this->m_totalEntities++, tag));
-	// ÏÈ¼ÓÈë toAdd ÁĞ±íÖĞ
+	if (e == nullptr) {
+		return nullptr;
+	}
+	// å°†å®ä½“åŠ å…¥åˆ° toAdd åˆ—è¡¨ä¸­ï¼Œåœ¨ä¸‹ä¸€æ¬¡ update æ—¶åŠ å…¥åˆ°å®ä½“åˆ—è¡¨ä¸­
 	this->m_toAdd.push_back(e);
 	return e;
 }
 
-/* »ñÈ¡ÍêÕûµÄÊµÌåÁĞ±í */
+/* è·å–æ€» entities åˆ—è¡¨ */
 const EntityVec& EntityManager::getEntities() {
 	return this->m_entities;
 }
 
-/* ¸ù¾İ tag »ñÈ¡¶ÔÓ¦µÄÊµÌåÁĞ±í */
+/* æ ¹æ® tag è·å– entities åˆ—è¡¨ */
 const EntityVec& EntityManager::getEntities(const std::string& tag) {
 	return this->m_entityMap[tag];
 }

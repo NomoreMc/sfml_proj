@@ -10,17 +10,17 @@ struct BulletConfig{};
 
 class Game {
 private:
-	sf::RenderWindow m_window;		// ÓÎÏ·Ö÷´°¿Ú
-	EntityManager m_entities;		// ÓÎÏ·ÊµÌå¶ÓÁĞ
+	sf::RenderWindow m_window;		// ä¸»çª—å£
+	EntityManager m_entities;		// å®ä½“ç®¡ç†å™¨
 	sf::Font m_font;
 	sf::Text m_text;
-	PlayerConfig m_playerConfig;	// Íæ¼ÒÅäÖÃ
-	EnemyConfig m_enemyConfig;		// µĞÈËÅäÖÃ
-	BulletConfig m_bulletConfig;	// ×Óµ¯ÅäÖÃ
+	PlayerConfig m_playerConfig;	// ç©å®¶é…ç½®
+	EnemyConfig m_enemyConfig;		// æ•Œäººé…ç½®
+	BulletConfig m_bulletConfig;	// å­å¼¹é…ç½®
 	
 	int m_score = 0;
-	int m_currentFrame = 0;			// µ±Ç°Ö¡ºÅ
-	int m_lastEnemySpawnTime = 0;	// ÉÏÒ»´ÎÉú³ÉµĞÈËµÄÊ±¼ä
+	int m_currentFrame = 0;			// å½“å‰å¸§æ•°
+	int m_lastEnemySpawnTime = 0;	// ä¸Šä¸€æ¬¡æ•Œäººç”Ÿæˆæ—¶é—´
 	bool m_pause = false;
 	bool m_running = true;
 
@@ -47,6 +47,6 @@ private:
 public:
 	Game(const std::string &configFilePath);
 
-	// ÓÎÏ·Ö÷Á÷³Ì
+	// run the game
 	void run();
 };

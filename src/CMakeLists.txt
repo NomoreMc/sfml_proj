@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 
 # -fsanitize=address 地址消毒
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -g -O0 -fsanitize=address -ftest-coverage -fprofile-arcs")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -g -O0")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -g -O0 -fsanitize=address -fno-omit-frame-pointer")
 
 # 查找 SFML 库（确保 SFML 安装路径在系统环境中）
 find_package(SFML 2.5 COMPONENTS system window graphics network audio REQUIRED)

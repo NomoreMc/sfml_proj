@@ -6,9 +6,9 @@ typedef std::map<std::string, EntityVec> EntityMap;
 
 class EntityManager {
 private:
-	EntityVec m_entities;	    // ±£´æµ±Ç°ÓÎÏ·ÖĞËùÓĞµÄ entities
-	EntityVec m_toAdd;			// ´ı¼ÓÈëÁĞ±íÖĞµÄ entities£¬½«ÔÚÏÂÒ»Ö¡²Å¼ÓÈë
-	EntityMap m_entityMap;		// ¸ù¾İ tag ±£´æÃ¿Àà entities
+	EntityVec m_entities;	    // æ€»çš„ entities åˆ—è¡¨
+	EntityVec m_toAdd;			// å¾…æ·»åŠ çš„ entities åˆ—è¡¨
+	EntityMap m_entityMap;		// æŒ‰ tag åˆ†ç±»çš„ entities åˆ—è¡¨
 	size_t m_totalEntities = 0;
 public:
 	EntityManager() {};
