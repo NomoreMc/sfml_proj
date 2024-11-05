@@ -19,18 +19,18 @@ void EntityManagerTest() {
     // EntityManager instance
     std::shared_ptr<EntityManager> em = std::make_shared<EntityManager>();
 
-    // Éú³ÉÐÂµÄÀàÐÍÎª t µÄ entity
+    // ï¿½ï¿½ï¿½ï¿½ï¿½Âµï¿½ï¿½ï¿½ï¿½ï¿½Îª t ï¿½ï¿½ entity
     for (size_t i = 0; i < 10; ++i) {
         em->addEntity(t);
     }
 
-    // µ÷ÓÃ update ½«ÐÂÉú³ÉµÄ entity ¼ÓÈëµ½¶ÓÁÐÖÐ
+    // ï¿½ï¿½ï¿½ï¿½ update ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éµï¿½ entity ï¿½ï¿½ï¿½ëµ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     em->update();
 
-    // »ñÈ¡ entities ÁÐ±í
+    // ï¿½ï¿½È¡ entities ï¿½Ð±ï¿½
     auto entities = em->getEntities();
 
-    // Êä³öÁÐ±íÖÐµÄ entity ÊµÀý×´Ì¬
+    // ï¿½ï¿½ï¿½ï¿½Ð±ï¿½ï¿½Ðµï¿½ entity Êµï¿½ï¿½×´Ì¬
     for (size_t i = 0; i < 10; ++i) {
         std::cout << entities[i]->tag() << " " << entities[i]->isActive() << std::endl;
     }
