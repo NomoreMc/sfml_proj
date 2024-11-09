@@ -46,7 +46,7 @@ int main()
     //Vec2Test();
 
     // entrance
-    Game g("config.txt");
+    Game g("../../config.txt");
     g.run();
 
     return 0;

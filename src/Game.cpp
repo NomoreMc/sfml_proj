@@ -28,7 +28,7 @@ void Game::init(const std::string& configFilePath) {
         if (label == "Window") {
             lineStream >> m_windowConfig.W >> m_windowConfig.H >> m_windowConfig.F >> m_windowConfig.M;
         } else if (label == "Font") {
-            lineStream >> m_fontConfig.S >> m_fontConfig.FR >> m_fontConfig.FG >> m_fontConfig.FB;
+            lineStream >> m_fontConfig.FS >> m_fontConfig.S >> m_fontConfig.FR >> m_fontConfig.FG >> m_fontConfig.FB;
         } else if (label == "Player") {
             lineStream >> m_playerConfig.SR >> m_playerConfig.CR >> m_playerConfig.FR >> m_playerConfig.FG >> m_playerConfig.FB >> m_playerConfig.OR >> m_playerConfig.OG >> m_playerConfig.OB >> m_playerConfig.OT >> m_playerConfig.V >> m_playerConfig.S;
         } else if (label == "Enemy") {
