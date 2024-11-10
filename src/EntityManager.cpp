@@ -9,14 +9,20 @@ void EntityManager::update() {
 		m_entityMap[e->tag()].push_back(e);
 	}
 	m_toAdd.clear();
+
+	removeDeadEntities(m_entities);
+
+	for (auto& [tag, entityVec] : m_entityMap) {
+		removeDeadEntities(entityVec);
+	}
 }
 
 /* 移除 active 为 false 的实体 */
 void EntityManager::removeDeadEntities(EntityVec& vec) {
 	// 移除 active 为 false 的实体
-	vec.erase(remove_if(vec.begin(), vec.end(), [](std::shared_ptr<Entity> e) {
+	vec.erase(remove_if(vec.begin(), vec.end(), [](std::shared_ptr<Entity> &e) {
 		return !e->isActive();
-	}), vec.end());
+		}), vec.end());
 }
 
 /* 添加标签为 tag 的实体 */
