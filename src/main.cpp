@@ -44,6 +44,7 @@ int main()
 
     // Vec2 Test
     //Vec2Test();
+    std::srand(std::time(0));
 
     // entrance
     Game g("../../config.txt");

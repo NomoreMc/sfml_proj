@@ -63,3 +63,7 @@ std::ostream& operator << (std::ostream& os, const Vec2& rhs) {
 	os << "x=" << rhs.x << " y=" << rhs.y;
 	return os;
 }
+
+float Vec2::distance(const Vec2& rhs) const {
+	return sqrt((this->x - rhs.x) * (this->x - rhs.x) + (this->y - rhs.y) * (this->y - rhs.y));
+}
