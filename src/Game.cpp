@@ -28,7 +28,7 @@ void Game::init(const std::string& configFilePath) {
         std::istringstream lineStream(line);
         std::string label;
         // 行首是配置的类型
-        lineStream >> label; 
+        lineStream >> label;
 
         if (label == "Window") {
             lineStream >> m_windowConfig.W >> m_windowConfig.H >>              // Window Width, window Height
@@ -66,7 +66,8 @@ void Game::init(const std::string& configFilePath) {
     /* init window */
     if (m_windowConfig.M) {
         m_window.create(sf::VideoMode(m_windowConfig.W, m_windowConfig.H, sf::Style::Fullscreen), "Assignment 2");
-    } else {
+    }
+    else {
         m_window.create(sf::VideoMode(m_windowConfig.W, m_windowConfig.H), "Assignment 2");
     }
     m_window.setFramerateLimit(m_windowConfig.F);
@@ -77,10 +78,10 @@ void Game::init(const std::string& configFilePath) {
         return;
     }
     m_text.setFont(m_font);
-    // m_text.setString("Shape Combat, Score: ");
+    /*m_text.setString("Shape Combat Score ");*/
     m_text.setCharacterSize(m_fontConfig.S);
     m_text.setFillColor(sf::Color(m_fontConfig.FR, m_fontConfig.FG, m_fontConfig.FB));
-    m_text.setPosition(m_windowConfig.H - FIXED_BORDER_LEN, m_windowConfig.W - FIXED_BORDER_LEN);
+    m_text.setPosition(0 + FIXED_BORDER_LEN, m_windowConfig.H - m_fontConfig.S - FIXED_BORDER_LEN);
 
     /* spawn player here */
     spawnPlayer();
@@ -134,7 +135,7 @@ void Game::sMovement() {
     }
 
     //
-    for (auto &e : m_entities.getEntities()) {
+    for (auto& e : m_entities.getEntities()) {
         if (e->tag() == "player") {
             continue;
         }
@@ -145,13 +146,15 @@ void Game::sMovement() {
     // player 更新位置，需要判断是否超出边界
     if (m_player->cTransform->pos.x - m_player->cShape->circle.getRadius() <= 0 && m_player->cTransform->velocity.x < 0) {
         m_player->cTransform->velocity.x = 0;
-    } else if (m_player->cTransform->pos.x + m_player->cShape->circle.getRadius() >= m_window.getSize().x && m_player->cTransform->velocity.x > 0) {
+    }
+    else if (m_player->cTransform->pos.x + m_player->cShape->circle.getRadius() >= m_window.getSize().x && m_player->cTransform->velocity.x > 0) {
         m_player->cTransform->velocity.x = 0;
     }
 
     if (m_player->cTransform->pos.y - m_player->cShape->circle.getRadius() <= 0 && m_player->cTransform->velocity.y < 0) {
         m_player->cTransform->velocity.y = 0;
-    } else if (m_player->cTransform->pos.y + m_player->cShape->circle.getRadius() >= m_window.getSize().y && m_player->cTransform->velocity.y > 0) {
+    }
+    else if (m_player->cTransform->pos.y + m_player->cShape->circle.getRadius() >= m_window.getSize().y && m_player->cTransform->velocity.y > 0) {
         m_player->cTransform->velocity.y = 0;
     }
 
@@ -171,56 +174,56 @@ void Game::sUserInput() {
         // this event is triggered when a key is pressed
         if (!m_pause && event.type == sf::Event::KeyPressed) {
             switch (event.key.code) {
-                case sf::Keyboard::W:
-                    // std::cout << "W pressed" << std::endl;
-                    m_player->cInput->up = true;
-                    break;
-                case sf::Keyboard::S:
-                    // std::cout << "S pressed" << std::endl;
-                    m_player->cInput->down = true;
-                    break;
-                case sf::Keyboard::A:
-                    // std::cout << "A pressed" << std::endl;
-                    m_player->cInput->left = true;
-                    break;
-                case sf::Keyboard::D:
-                    // std::cout << "D pressed" << std::endl;
-                    m_player->cInput->right = true;
-                    break;
-                case sf::Keyboard::Escape:
-                    // std::cout << "ESC pressed" << std::endl;
-                    m_running = false;
-                default:
-                    break;
+            case sf::Keyboard::W:
+                // std::cout << "W pressed" << std::endl;
+                m_player->cInput->up = true;
+                break;
+            case sf::Keyboard::S:
+                // std::cout << "S pressed" << std::endl;
+                m_player->cInput->down = true;
+                break;
+            case sf::Keyboard::A:
+                // std::cout << "A pressed" << std::endl;
+                m_player->cInput->left = true;
+                break;
+            case sf::Keyboard::D:
+                // std::cout << "D pressed" << std::endl;
+                m_player->cInput->right = true;
+                break;
+            case sf::Keyboard::Escape:
+                // std::cout << "ESC pressed" << std::endl;
+                m_running = false;
+            default:
+                break;
             }
         }
 
         // this event is triggered when a key is released
         if (event.type == sf::Event::KeyReleased) {
             switch (event.key.code) {
-                case sf::Keyboard::W:
-                    // std::cout << "W released" << std::endl;
-                    m_player->cInput->up = false;
-                    break;
-                case sf::Keyboard::S:
-                    // std::cout << "S released" << std::endl;
-                    m_player->cInput->down = false;
-                    break;
-                case sf::Keyboard::A:
-                    // std::cout << "A released" << std::endl;
-                    m_player->cInput->left = false;
-                    break;
-                case sf::Keyboard::D:
-                    // std::cout << "D released" << std::endl;
-                    m_player->cInput->right = false;
-                    break;
-                case sf::Keyboard::P:
-                    // std::cout << "P released" << std::endl;
-                    setPaused(!m_pause);
+            case sf::Keyboard::W:
+                // std::cout << "W released" << std::endl;
+                m_player->cInput->up = false;
+                break;
+            case sf::Keyboard::S:
+                // std::cout << "S released" << std::endl;
+                m_player->cInput->down = false;
+                break;
+            case sf::Keyboard::A:
+                // std::cout << "A released" << std::endl;
+                m_player->cInput->left = false;
+                break;
+            case sf::Keyboard::D:
+                // std::cout << "D released" << std::endl;
+                m_player->cInput->right = false;
+                break;
+            case sf::Keyboard::P:
+                // std::cout << "P released" << std::endl;
+                setPaused(!m_pause);
 
-                    break;
-                default:
-                    break;
+                break;
+            default:
+                break;
             }
         }
 
@@ -245,7 +248,8 @@ void Game::sLifeSpan() {
         if (e->cLifespan != nullptr) {
             if (e->cLifespan->remaining > 0) {
                 --e->cLifespan->remaining;
-            } else {
+            }
+            else {
                 e->destroy();
             }
         }
@@ -286,7 +290,7 @@ void Game::sRender() {
     }
 
     // text
-    std::string str = "Shape Combat, Score: " + std::to_string(m_score);
+    std::string str = "Shape Combat Score 1 " + std::to_string(m_score);
     m_text.setString(str);
     m_window.draw(m_text);
 
@@ -328,20 +332,20 @@ void Game::sCollision() {
 
     // 敌人：边界检测
     for (auto e : m_entities.getEntities("enemy")) {
-        if ((e->cTransform->pos.x - e->cShape->circle.getRadius() <= 0) || (e->cTransform->pos.x + + e->cShape->circle.getRadius() >= m_window.getSize().x)) {
+        if ((e->cTransform->pos.x - e->cShape->circle.getRadius() <= 0) || (e->cTransform->pos.x + +e->cShape->circle.getRadius() >= m_window.getSize().x)) {
             e->cTransform->velocity.x = -e->cTransform->velocity.x;
         }
-        if (e->cTransform->pos.y - e->cShape->circle.getRadius() <= 0  || e->cTransform->pos.y + e->cShape->circle.getRadius() >= m_window.getSize().y) {
+        if (e->cTransform->pos.y - e->cShape->circle.getRadius() <= 0 || e->cTransform->pos.y + e->cShape->circle.getRadius() >= m_window.getSize().y) {
             e->cTransform->velocity.y = -e->cTransform->velocity.y;
         }
     }
 
     // 小敌人：边界检测
     for (auto e : m_entities.getEntities("smallenemy")) {
-        if ((e->cTransform->pos.x - e->cShape->circle.getRadius() <= 0) || (e->cTransform->pos.x + + e->cShape->circle.getRadius() >= m_window.getSize().x)) {
+        if ((e->cTransform->pos.x - e->cShape->circle.getRadius() <= 0) || (e->cTransform->pos.x + +e->cShape->circle.getRadius() >= m_window.getSize().x)) {
             e->cTransform->velocity.x = -e->cTransform->velocity.x;
         }
-        if (e->cTransform->pos.y - e->cShape->circle.getRadius() <= 0  || e->cTransform->pos.y + e->cShape->circle.getRadius() >= m_window.getSize().y) {
+        if (e->cTransform->pos.y - e->cShape->circle.getRadius() <= 0 || e->cTransform->pos.y + e->cShape->circle.getRadius() >= m_window.getSize().y) {
             e->cTransform->velocity.y = -e->cTransform->velocity.y;
         }
     }
@@ -384,7 +388,7 @@ void Game::spawnPlayer() {
         sf::Color(m_playerConfig.FR, m_playerConfig.FG, m_playerConfig.FB),    // fill color
         sf::Color(m_playerConfig.OR, m_playerConfig.OG, m_playerConfig.OB),    // outline color
         m_playerConfig.OT);                                                    // thickness
-    
+
     // set the center point as the shape center instead of using the top left corner
     entity->cShape->circle.setOrigin(m_playerConfig.SR, m_playerConfig.SR);
 
@@ -427,7 +431,7 @@ void Game::spawnEnemy() {
 }
 
 void Game::spawnSmallEnemies(std::shared_ptr<Entity> entity) {
-    std::cout<<"small enemy spawned"<<std::endl;
+    std::cout << "small enemy spawned" << std::endl;
 
     // 当前敌人的坐标
     float x = entity->cTransform->pos.x;
@@ -435,7 +439,7 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> entity) {
 
     // 当前敌人的边数
     int points = entity->cShape->circle.getPointCount();
-    
+
     // 填充颜色
     uint8_t f_r = entity->cShape->circle.getFillColor().r;
     uint8_t f_g = entity->cShape->circle.getFillColor().g;
@@ -457,7 +461,7 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> entity) {
         // 速度继承 entity 的，角度为 360/v * i，math sin cos 使用的是弧度制，需要 * pi / 180
         float angle = (360.0f / points * i) * 3.1415926 / 180;
         // std::cout<<"angle: "<<angle<<std::endl;
-        
+
         sx = s * cos(angle);
         // std::cout<<"cos: "<<cos(angle)<<" sx: "<<sx<<std::endl;
         sy = s * sin(angle);
@@ -476,7 +480,7 @@ void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2& mousePos) {
     Vec2 startPos(playerPos.x, playerPos.y);
 
     // calculate sqrt((Bx - Px)^2 + (By - Py)^2)
-    float distance = std::sqrt((mousePos.x - playerPos.x)*(mousePos.x - playerPos.x) + (mousePos.y - playerPos.y) * (mousePos.y - playerPos.y));
+    float distance = std::sqrt((mousePos.x - playerPos.x) * (mousePos.x - playerPos.x) + (mousePos.y - playerPos.y) * (mousePos.y - playerPos.y));
 
     // std::cout << "distance: " << distance << std::endl;
 
