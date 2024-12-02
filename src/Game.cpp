@@ -140,15 +140,19 @@ void Game::sMovement() {
         m_player->cTransform->velocity.x = 5.0f;
     }
 
-    for (auto &e : m_entities.getEntities("bullet")) {
+    //
+    for (auto &e : m_entities.getEntities()) {
+        if (e->tag() == "player") {
+            continue;
+        }
         e->cTransform->pos.x += e->cTransform->velocity.x;
         e->cTransform->pos.y += e->cTransform->velocity.y;
     }
 
-    for (auto &e : m_entities.getEntities("enemy")) {
-        e->cTransform->pos.x += e->cTransform->velocity.x;
-        e->cTransform->pos.y += e->cTransform->velocity.y;
-    }
+    // for (auto &e : m_entities.getEntities("enemy")) {
+    //     e->cTransform->pos.x += e->cTransform->velocity.x;
+    //     e->cTransform->pos.y += e->cTransform->velocity.y;
+    // }
 
     // player 更新位置，需要判断是否超出边界
     if (m_player->cTransform->pos.x - m_player->cShape->circle.getRadius() <= 0 && m_player->cTransform->velocity.x < 0) {
@@ -267,8 +271,7 @@ void Game::sLifeSpan() {
         if (e->cLifespan != nullptr) {
             if (e->cLifespan->remaining > 0) {
                 --e->cLifespan->remaining;
-            }
-            else {
+            } else {
                 e->destroy();
             }
             // std::cout << "bullet life remain: " << e->cLifespan->remaining << std::endl;c
@@ -282,20 +285,21 @@ void Game::sRender() {
     m_window.clear();
 
     // 敌人渲染
-    for (auto& e : m_entities.getEntities("enemy")) {
+    for (auto& e : m_entities.getEntities()) {
         // set the position of the shape based on the entity's transform->pos
-        //e->cShape->circle.setPosition(e->cTransform->pos.x, e->cTransform->pos.y);
+        // set pos
         e->cShape->circle.setPosition(e->cTransform->pos.x, e->cTransform->pos.y);
 
-        // set the position of the shape based on the entity's transform->angle
-        //e->cTransform->angle += 1.0f;
-        //e->cShape->circle.setRotation(e->cTransform->angle);
-
-        // draw the entity's sf::CircleShape
-
         // 旋转
-        e->cTransform->angle += 1.0f;
-        e->cShape->circle.setRotation(e->cTransform->angle);
+        if (e->tag() != "bullet") {
+            e->cTransform->angle += 1.0f;
+            e->cShape->circle.setRotation(e->cTransform->angle);
+        }
+
+        if (e->cLifespan != nullptr) {
+            
+        }
+
         m_window.draw(e->cShape->circle);
     }
 
@@ -306,10 +310,10 @@ void Game::sRender() {
     }
 
     // draw the player entity
-    m_player->cShape->circle.setPosition(m_player->cTransform->pos.x, m_player->cTransform->pos.y);
-    m_player->cTransform->angle += 1.0f;
-    m_player->cShape->circle.setRotation(m_player->cTransform->angle);
-    m_window.draw(m_player->cShape->circle);
+    // m_player->cShape->circle.setPosition(m_player->cTransform->pos.x, m_player->cTransform->pos.y);
+    // m_player->cTransform->angle += 1.0f;
+    // m_player->cShape->circle.setRotation(m_player->cTransform->angle);
+    // m_window.draw(m_player->cShape->circle);
 
     // draw the text
     m_window.draw(m_text);
@@ -345,10 +349,15 @@ void Game::sCollision() {
     for (auto b : m_entities.getEntities("bullet")) {
         for (auto e : m_entities.getEntities("enemy")) {
             if (b->cTransform->pos.distance(e->cTransform->pos) < (b->cShape->circle.getRadius() + e->cShape->circle.getRadius())) {
-                // if (e->tag() == "enemy") {
+                if (e->tag() == "enemy") {
                     spawnSmallEnemies(e);
-                // }
-                
+                }
+                b->destroy();
+                e->destroy();
+            }
+        }
+        for (auto e : m_entities.getEntities("smallenemy")) {
+            if (b->cTransform->pos.distance(e->cTransform->pos) < (b->cShape->circle.getRadius() + e->cShape->circle.getRadius())) {
                 b->destroy();
                 e->destroy();
             }
@@ -357,6 +366,16 @@ void Game::sCollision() {
 
     // 敌人：边界检测
     for (auto e : m_entities.getEntities("enemy")) {
+        if ((e->cTransform->pos.x - e->cShape->circle.getRadius() <= 0) || (e->cTransform->pos.x + + e->cShape->circle.getRadius() >= m_window.getSize().x)) {
+            e->cTransform->velocity.x = -e->cTransform->velocity.x;
+        }
+        if (e->cTransform->pos.y - e->cShape->circle.getRadius() <= 0  || e->cTransform->pos.y + e->cShape->circle.getRadius() >= m_window.getSize().y) {
+            e->cTransform->velocity.y = -e->cTransform->velocity.y;
+        }
+    }
+
+    // 小敌人：边界检测
+    for (auto e : m_entities.getEntities("smallenemy")) {
         if ((e->cTransform->pos.x - e->cShape->circle.getRadius() <= 0) || (e->cTransform->pos.x + + e->cShape->circle.getRadius() >= m_window.getSize().x)) {
             e->cTransform->velocity.x = -e->cTransform->velocity.x;
         }
@@ -486,7 +505,7 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> entity) {
 
     // 生成死亡敌人的边数的小敌人
     for (int i = 0; i < entity->cShape->circle.getPointCount(); ++i) {
-        auto e = m_entities.addEntity("enemy");
+        auto e = m_entities.addEntity("smallenemy");
         // 速度继承 entity 的，角度为 360/v * i，需要计算
         float angle = (360.0f / points * i) * 3.1415926 / 180;
         std::cout<<"angle: "<<angle<<std::endl;
@@ -501,7 +520,7 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> entity) {
         // 
 
         e->cTransform = std::make_shared<CTransform>(Vec2(x, y), Vec2(sx, sy), 0.0f);
-        e->cShape = std::make_shared<CShape>(m_enemyConfig.SR / 2, m_enemyConfig.CR / 2, sf::Color(f_r, f_g, f_b), sf::Color(o_r, o_g, o_b), m_enemyConfig.OT);
+        e->cShape = std::make_shared<CShape>(m_enemyConfig.SR / 2, points, sf::Color(f_r, f_g, f_b), sf::Color(o_r, o_g, o_b), m_enemyConfig.OT);
         e->cShape->circle.setOrigin(m_enemyConfig.SR / 2, m_playerConfig.SR / 2);
         e->cLifespan = std::make_shared<CLifespan>(m_enemyConfig.L);
     }
