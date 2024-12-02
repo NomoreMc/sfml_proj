@@ -77,7 +77,7 @@ void Game::init(const std::string& configFilePath) {
         return;
     }
     m_text.setFont(m_font);
-    m_text.setString("Shape Combat");
+    // m_text.setString("Shape Combat, Score: ");
     m_text.setCharacterSize(m_fontConfig.S);
     m_text.setFillColor(sf::Color(m_fontConfig.FR, m_fontConfig.FG, m_fontConfig.FB));
     m_text.setPosition(m_windowConfig.H - FIXED_BORDER_LEN, m_windowConfig.W - FIXED_BORDER_LEN);
@@ -87,9 +87,6 @@ void Game::init(const std::string& configFilePath) {
 }
 
 void Game::run() {
-    // TODO: add pause functionallity
-    //       some systems should function while paused (rendering)
-    //       some systems shouldn't (movement, input)
     while (m_running) {
         m_entities.update();    // 更新实体
 
@@ -102,11 +99,7 @@ void Game::run() {
 
             ++m_currentFrame;
         }
-        // sEnemySpawner();        // 生成敌人 return
-        // sMovement();            // 计算下一帧移动到的位置 player, bullet
-        // sCollision();           // 碰撞检测 return
         sUserInput();           // 用户输入
-        // sLifeSpan();            // 所有含有 lifespan 的 entities lifespan - 1
         sRender();              // 渲染
 
         ++m_currentFrame;
@@ -114,7 +107,7 @@ void Game::run() {
 }
 
 void Game::setPaused(bool pause) {
-    // m_pause = pause;
+    m_pause = pause;
 }
 
 // systems
@@ -149,11 +142,6 @@ void Game::sMovement() {
         e->cTransform->pos.y += e->cTransform->velocity.y;
     }
 
-    // for (auto &e : m_entities.getEntities("enemy")) {
-    //     e->cTransform->pos.x += e->cTransform->velocity.x;
-    //     e->cTransform->pos.y += e->cTransform->velocity.y;
-    // }
-
     // player 更新位置，需要判断是否超出边界
     if (m_player->cTransform->pos.x - m_player->cShape->circle.getRadius() <= 0 && m_player->cTransform->velocity.x < 0) {
         m_player->cTransform->velocity.x = 0;
@@ -173,11 +161,6 @@ void Game::sMovement() {
 }
 
 void Game::sUserInput() {
-    // TODO: handle user input here
-    // note that you should only be setting the player's input component variables here
-    // you should not implement the player's movement logic here
-    // the movement system will read the variables you set in this function
-
     sf::Event event;
     while (m_window.pollEvent(event)) {
         // this event is triggered when the window is closed
@@ -233,7 +216,8 @@ void Game::sUserInput() {
                     break;
                 case sf::Keyboard::P:
                     // std::cout << "P released" << std::endl;
-                    m_pause = !m_pause;
+                    setPaused(!m_pause);
+
                     break;
                 default:
                     break;
@@ -248,25 +232,15 @@ void Game::sUserInput() {
                 spawnBullet(m_player, Vec2(event.mouseButton.x, event.mouseButton.y));
             }
             if (event.mouseButton.button == sf::Mouse::Right) {
-                // std::cout << "Right mouse button pressed at (" << event.mouseButton.x << ", " << event.mouseButton.y << ")" << std::endl;
+                std::cout << "Right mouse button pressed at (" << event.mouseButton.x << ", " << event.mouseButton.y << ")" << std::endl;
                 // call spawnSpecialWeapon here
+                spawnSpecialWeapon(m_player);
             }
         }
     }
 }
 
 void Game::sLifeSpan() {
-    //return;
-    // TODO: implement the lifespan system
-
-    // for all entities
-    // if entity has no lifespan component, skip it
-    // if entity has > 0 remaining lifespan, subtract 1
-    // it if has lifespan and is alive
-    // scale its alpha channel properly
-    // if it has lifespan and its time is up
-    // destroy the entity
-
     for (auto& e : m_entities.getEntities()) {
         if (e->cLifespan != nullptr) {
             if (e->cLifespan->remaining > 0) {
@@ -274,30 +248,32 @@ void Game::sLifeSpan() {
             } else {
                 e->destroy();
             }
-            // std::cout << "bullet life remain: " << e->cLifespan->remaining << std::endl;c
         }
     }
 }
 
 void Game::sRender() {
-    // TODO: change the code below to draw all of the entities
-    //       sample drawing of the player entity that we have created
     m_window.clear();
 
     // 敌人渲染
     for (auto& e : m_entities.getEntities()) {
-        // set the position of the shape based on the entity's transform->pos
-        // set pos
+        // position
         e->cShape->circle.setPosition(e->cTransform->pos.x, e->cTransform->pos.y);
 
-        // 旋转
-        if (e->tag() != "bullet") {
+        // rotation
+        if (e->tag() != "bullet" && e->tag() != "smallenemy") {
             e->cTransform->angle += 1.0f;
             e->cShape->circle.setRotation(e->cTransform->angle);
         }
 
+        if (e->tag() == "smallenemy") {
+            e->cTransform->angle += 5.0f;
+            e->cShape->circle.setRotation(e->cTransform->angle);
+        }
+
+        // lifespan transparency
         if (e->cLifespan != nullptr) {
-            
+            e->cShape->circle.setFillColor(sf::Color(e->cShape->circle.getFillColor().r, e->cShape->circle.getFillColor().g, e->cShape->circle.getFillColor().b, 255 * e->cLifespan->remaining / e->cLifespan->total));
         }
 
         m_window.draw(e->cShape->circle);
@@ -309,42 +285,26 @@ void Game::sRender() {
         m_window.draw(e->cShape->circle);
     }
 
-    // draw the player entity
-    // m_player->cShape->circle.setPosition(m_player->cTransform->pos.x, m_player->cTransform->pos.y);
-    // m_player->cTransform->angle += 1.0f;
-    // m_player->cShape->circle.setRotation(m_player->cTransform->angle);
-    // m_window.draw(m_player->cShape->circle);
-
-    // draw the text
+    // text
+    std::string str = "Shape Combat, Score: " + std::to_string(m_score);
+    m_text.setString(str);
     m_window.draw(m_text);
 
-    // display the window
+    // window display
     m_window.display();
 }
 
 // 生成敌人
 void Game::sEnemySpawner() {
-    // return;
-    // TODO: code which implements enemey spawning should go here
-    //
-    // (use m_currentFrame - m_lastEnemySpawnTime) to determine
-    // how long it has veen since the last enemy was spawned
-
     // if it has been long enough, spawn an enemy
     if (m_currentFrame - m_lastEnemySpawnTime >= m_enemyConfig.SI) {
         spawnEnemy();
         m_lastEnemySpawnTime = m_currentFrame;
     }
-
-    // spawnEnemy();
 }
 
 // 碰撞检测
 void Game::sCollision() {
-    // return;
-    // TODO: implement all proper collisions between entities
-    //       be sure to use the collision radius, Not the shape radius
-
     // 射击检测
     for (auto b : m_entities.getEntities("bullet")) {
         for (auto e : m_entities.getEntities("enemy")) {
@@ -354,12 +314,14 @@ void Game::sCollision() {
                 }
                 b->destroy();
                 e->destroy();
+                m_score += 100;
             }
         }
         for (auto e : m_entities.getEntities("smallenemy")) {
             if (b->cTransform->pos.distance(e->cTransform->pos) < (b->cShape->circle.getRadius() + e->cShape->circle.getRadius())) {
                 b->destroy();
                 e->destroy();
+                m_score += 300;
             }
         }
     }
@@ -390,28 +352,29 @@ void Game::sCollision() {
             m_player->destroy();
             e->destroy();
             spawnPlayer();
+            m_score -= 100;
+        }
+    }
+
+    // 玩家与小敌人碰撞检测
+    for (auto e : m_entities.getEntities("smallenemy")) {
+        if (m_player->cTransform->pos.distance(e->cTransform->pos) < (m_player->cShape->circle.getRadius() + e->cShape->circle.getRadius())) {
+            m_player->destroy();
+            e->destroy();
+            spawnPlayer();
+            m_score -= 100;
         }
     }
 }
 
 // helper function
 void Game::spawnPlayer() {
-    // TODO: Finish adding all properties of the player with the correct values from the config
-
-    // we create every entity by calling EntityManager.addEntity(tag)
-    // this return a std::shared_ptr<Entity>, so we use 'auto' to save typing
     auto entity = m_entities.addEntity("player");
 
-    // give this entity a Transform so it spawns at (200, 200) with veloctiy (1, 1) and angle 0
-    // m_window.getSize().x / 2, m_window.getSize().y / 2
-    //entity->cTransform = std::make_shared<CTransform>(Vec2(200.0f, 200.0f), Vec2(0.0f, 0.0f), 0.0f);
     entity->cTransform = std::make_shared<CTransform>(
         Vec2(m_windowConfig.W / 2, m_windowConfig.H / 2),   // initial pos
         Vec2(0.0f, 0.0f),                                   // initial movement velocity
         0.0f);                                              // initial movement angle
-
-    // std::cout << "W /2: " << m_windowConfig.W / 2 << std::endl;
-    // std::cout << "H /2: " << m_windowConfig.H / 2 << std::endl;
 
     // the entity's shape will have radius 32, 8 sides, dark grey fill, and red outline of thickness 4
     // init player shape base on playerConfig
@@ -425,15 +388,9 @@ void Game::spawnPlayer() {
     // set the center point as the shape center instead of using the top left corner
     entity->cShape->circle.setOrigin(m_playerConfig.SR, m_playerConfig.SR);
 
-    // std::cout << "Shape Radius: " << m_playerConfig.SR << std::endl;
-    // std::cout << "Vertices: " << m_playerConfig.V << std::endl;
-    // std::cout << "Thickness: " << m_playerConfig.OT << std::endl;
-
     // add an input component to the player so that we can use inputs
     entity->cInput = std::make_shared<CInput>();
 
-    // since we ant this entity to be our player, set our Game's player variable to be this entity
-    // this goes slightly against the EntityManager paradigm, but we use the player so much it's worth it
     m_player = entity;
 }
 
@@ -470,16 +427,7 @@ void Game::spawnEnemy() {
 }
 
 void Game::spawnSmallEnemies(std::shared_ptr<Entity> entity) {
-    // return;
-    // TODO: spawn small enemies at the location of the input enemy e
-
-    // when we create the smaller enemy, we have to read the values of the original enemy
-    // - spawn a number of small enemies equal to the ;vertices of the original enemy
-    // - set each small enemy to the same color as the original, half the size
-    // - small enemies are worh double points of the original enemy
-
     std::cout<<"small enemy spawned"<<std::endl;
-    // auto e = m_entities.addEntity("enemy");
 
     // 当前敌人的坐标
     float x = entity->cTransform->pos.x;
@@ -506,18 +454,14 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> entity) {
     // 生成死亡敌人的边数的小敌人
     for (int i = 0; i < entity->cShape->circle.getPointCount(); ++i) {
         auto e = m_entities.addEntity("smallenemy");
-        // 速度继承 entity 的，角度为 360/v * i，需要计算
+        // 速度继承 entity 的，角度为 360/v * i，math sin cos 使用的是弧度制，需要 * pi / 180
         float angle = (360.0f / points * i) * 3.1415926 / 180;
-        std::cout<<"angle: "<<angle<<std::endl;
+        // std::cout<<"angle: "<<angle<<std::endl;
         
         sx = s * cos(angle);
-        std::cout<<"cos: "<<cos(angle)<<" sx: "<<sx<<std::endl;
+        // std::cout<<"cos: "<<cos(angle)<<" sx: "<<sx<<std::endl;
         sy = s * sin(angle);
-        std::cout<<"sin: "<<sin(angle)<<" sy: "<<sy<<std::endl;
-
-        // std::cout<<"sx: "<<sx<<" sy: "<<sy<<std::endl;
-
-        // 
+        // std::cout<<"sin: "<<sin(angle)<<" sy: "<<sy<<std::endl;
 
         e->cTransform = std::make_shared<CTransform>(Vec2(x, y), Vec2(sx, sy), 0.0f);
         e->cShape = std::make_shared<CShape>(m_enemyConfig.SR / 2, points, sf::Color(f_r, f_g, f_b), sf::Color(o_r, o_g, o_b), m_enemyConfig.OT);
@@ -527,10 +471,6 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> entity) {
 }
 
 void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2& mousePos) {
-    // TODO: implement the spawning of a bullet which travels towards the mouse position
-    //       - bullet speeed is given as a scalar speed
-    //       - you must set he velocity by using formula in notes
-
     // get player position
     sf::Vector2f playerPos = m_player->cShape->circle.getPosition();
     Vec2 startPos(playerPos.x, playerPos.y);
@@ -556,5 +496,20 @@ void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2& mousePos) {
 }
 
 void Game::spawnSpecialWeapon(std::shared_ptr<Entity> eneity) {
-    // TODO: implement your own special weapon
+    // get player position
+    sf::Vector2f playerPos = m_player->cShape->circle.getPosition();
+    Vec2 startPos(playerPos.x, playerPos.y);
+
+    for (size_t i = 0; i < 36; ++i) {
+        auto bullet = m_entities.addEntity("bullet");
+
+        float sx = m_bulletConfig.S * cos(i * 10 * 3.1415926 / 180);
+        float sy = m_bulletConfig.S * sin(i * 10 * 3.1415926 / 180);
+
+        bullet->cTransform = std::make_shared<CTransform>(startPos, Vec2(sx, sy), 0);
+
+        bullet->cShape = std::make_shared<CShape>(8, 8, sf::Color(255, 255, 255), sf::Color(255, 0, 0), 2);
+
+        bullet->cLifespan = std::make_shared<CLifespan>(m_bulletConfig.L);
+    }
 }
