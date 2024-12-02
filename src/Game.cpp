@@ -290,7 +290,7 @@ void Game::sRender() {
     }
 
     // text
-    std::string str = "Shape Combat Score 1 " + std::to_string(m_score);
+    std::string str = "Shape Combat --- Score: " + std::to_string(m_score);
     m_text.setString(str);
     m_window.draw(m_text);
 
