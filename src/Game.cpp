@@ -113,10 +113,6 @@ void Game::setPaused(bool pause) {
 
 // systems
 void Game::sMovement() {
-    //return;
-    // TODO: implement all entity movement in this function
-    //       you should reaad the m_player->cInput component to determine if the player is moving
-
     m_player->cTransform->velocity.x = 0.0f;
     m_player->cTransform->velocity.y = 0.0f;
 
@@ -175,23 +171,18 @@ void Game::sUserInput() {
         if (!m_pause && event.type == sf::Event::KeyPressed) {
             switch (event.key.code) {
             case sf::Keyboard::W:
-                // std::cout << "W pressed" << std::endl;
                 m_player->cInput->up = true;
                 break;
             case sf::Keyboard::S:
-                // std::cout << "S pressed" << std::endl;
                 m_player->cInput->down = true;
                 break;
             case sf::Keyboard::A:
-                // std::cout << "A pressed" << std::endl;
                 m_player->cInput->left = true;
                 break;
             case sf::Keyboard::D:
-                // std::cout << "D pressed" << std::endl;
                 m_player->cInput->right = true;
                 break;
             case sf::Keyboard::Escape:
-                // std::cout << "ESC pressed" << std::endl;
                 m_running = false;
             default:
                 break;
@@ -202,23 +193,18 @@ void Game::sUserInput() {
         if (event.type == sf::Event::KeyReleased) {
             switch (event.key.code) {
             case sf::Keyboard::W:
-                // std::cout << "W released" << std::endl;
                 m_player->cInput->up = false;
                 break;
             case sf::Keyboard::S:
-                // std::cout << "S released" << std::endl;
                 m_player->cInput->down = false;
                 break;
             case sf::Keyboard::A:
-                // std::cout << "A released" << std::endl;
                 m_player->cInput->left = false;
                 break;
             case sf::Keyboard::D:
-                // std::cout << "D released" << std::endl;
                 m_player->cInput->right = false;
                 break;
             case sf::Keyboard::P:
-                // std::cout << "P released" << std::endl;
                 setPaused(!m_pause);
 
                 break;
@@ -230,7 +216,6 @@ void Game::sUserInput() {
         // this event is triggered when a mouse button is pressed
         if (!m_pause && event.type == sf::Event::MouseButtonPressed) {
             if (event.mouseButton.button == sf::Mouse::Left) {
-                // std::cout << "Left mouse button pressed at (" << event.mouseButton.x << ", " << event.mouseButton.y << ")" << std::endl;
                 // call spawnBullet here
                 spawnBullet(m_player, Vec2(event.mouseButton.x, event.mouseButton.y));
             }
@@ -312,7 +297,7 @@ void Game::sCollision() {
     // 射击检测
     for (auto b : m_entities.getEntities("bullet")) {
         for (auto e : m_entities.getEntities("enemy")) {
-            if (b->cTransform->pos.distance(e->cTransform->pos) < (b->cShape->circle.getRadius() + e->cShape->circle.getRadius())) {
+            if (b->cTransform->pos.distance(e->cTransform->pos) < (b->cCollision->radius + e->cCollision->radius)) {
                 if (e->tag() == "enemy") {
                     spawnSmallEnemies(e);
                 }
@@ -322,7 +307,7 @@ void Game::sCollision() {
             }
         }
         for (auto e : m_entities.getEntities("smallenemy")) {
-            if (b->cTransform->pos.distance(e->cTransform->pos) < (b->cShape->circle.getRadius() + e->cShape->circle.getRadius())) {
+            if (b->cTransform->pos.distance(e->cTransform->pos) < (b->cCollision->radius + e->cCollision->radius)) {
                 b->destroy();
                 e->destroy();
                 m_score += 300;
@@ -395,11 +380,12 @@ void Game::spawnPlayer() {
     // add an input component to the player so that we can use inputs
     entity->cInput = std::make_shared<CInput>();
 
+    entity->cCollision = std::make_shared<CCollision>(m_playerConfig.CR);
+
     m_player = entity;
 }
 
 void Game::spawnEnemy() {
-    // std::cout<<"enemy spawned"<<std::endl;
     auto entity = m_entities.addEntity("enemy");
 
     // 坐标
@@ -428,11 +414,11 @@ void Game::spawnEnemy() {
     entity->cShape = std::make_shared<CShape>(m_enemyConfig.SR, points, sf::Color(f_r, f_g, f_b), sf::Color(o_r, o_g, o_b), m_enemyConfig.OT);
 
     entity->cShape->circle.setOrigin(m_enemyConfig.SR, m_playerConfig.SR);
+
+    entity->cCollision = std::make_shared<CCollision>(m_enemyConfig.CR);
 }
 
 void Game::spawnSmallEnemies(std::shared_ptr<Entity> entity) {
-    std::cout << "small enemy spawned" << std::endl;
-
     // 当前敌人的坐标
     float x = entity->cTransform->pos.x;
     float y = entity->cTransform->pos.y;
@@ -460,17 +446,15 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> entity) {
         auto e = m_entities.addEntity("smallenemy");
         // 速度继承 entity 的，角度为 360/v * i，math sin cos 使用的是弧度制，需要 * pi / 180
         float angle = (360.0f / points * i) * 3.1415926 / 180;
-        // std::cout<<"angle: "<<angle<<std::endl;
 
         sx = s * cos(angle);
-        // std::cout<<"cos: "<<cos(angle)<<" sx: "<<sx<<std::endl;
         sy = s * sin(angle);
-        // std::cout<<"sin: "<<sin(angle)<<" sy: "<<sy<<std::endl;
 
         e->cTransform = std::make_shared<CTransform>(Vec2(x, y), Vec2(sx, sy), 0.0f);
         e->cShape = std::make_shared<CShape>(m_enemyConfig.SR / 2, points, sf::Color(f_r, f_g, f_b), sf::Color(o_r, o_g, o_b), m_enemyConfig.OT);
         e->cShape->circle.setOrigin(m_enemyConfig.SR / 2, m_playerConfig.SR / 2);
         e->cLifespan = std::make_shared<CLifespan>(m_enemyConfig.L);
+        e->cCollision = std::make_shared<CCollision>(m_enemyConfig.CR / 2);
     }
 }
 
@@ -482,13 +466,8 @@ void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2& mousePos) {
     // calculate sqrt((Bx - Px)^2 + (By - Py)^2)
     float distance = std::sqrt((mousePos.x - playerPos.x) * (mousePos.x - playerPos.x) + (mousePos.y - playerPos.y) * (mousePos.y - playerPos.y));
 
-    // std::cout << "distance: " << distance << std::endl;
-
     float sx = (m_bulletConfig.S * (mousePos.x - playerPos.x)) / distance;
     float sy = (m_bulletConfig.S * (mousePos.y - playerPos.y)) / distance;
-
-    std::cout << "sx: " << sx << std::endl;
-    std::cout << "sy: " << sy << std::endl;
 
     auto bullet = m_entities.addEntity("bullet");
 
@@ -497,9 +476,16 @@ void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2& mousePos) {
     bullet->cShape = std::make_shared<CShape>(8, 8, sf::Color(255, 255, 255), sf::Color(255, 0, 0), 2);
 
     bullet->cLifespan = std::make_shared<CLifespan>(m_bulletConfig.L);
+
+    bullet->cCollision = std::make_shared<CCollision>(m_bulletConfig.CR);
 }
 
 void Game::spawnSpecialWeapon(std::shared_ptr<Entity> eneity) {
+    // 特殊武器的冷却时间为 600 帧
+    if (m_currentFrame - m_specialWeaponPrevFrame < 600) {
+        return;
+    }
+
     // get player position
     sf::Vector2f playerPos = m_player->cShape->circle.getPosition();
     Vec2 startPos(playerPos.x, playerPos.y);
@@ -515,5 +501,9 @@ void Game::spawnSpecialWeapon(std::shared_ptr<Entity> eneity) {
         bullet->cShape = std::make_shared<CShape>(8, 8, sf::Color(255, 255, 255), sf::Color(255, 0, 0), 2);
 
         bullet->cLifespan = std::make_shared<CLifespan>(m_bulletConfig.L);
+
+        bullet->cCollision = std::make_shared<CCollision>(m_bulletConfig.CR);
     }
+
+    m_specialWeaponPrevFrame = m_currentFrame;
 }
